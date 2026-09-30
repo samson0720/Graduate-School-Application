@@ -37,9 +37,10 @@ greenepass_arch.png  greenepass_ui1.png  greenepass_award.jpg
 netapp_arch.png  netapp_ui1.png
 tt_pipeline.png  tt_result.png
 hlb_arch.png  hlb_ui1.png  hlb_expo.jpg
-dahu_ui1.png
-mapory_arch.png  mapory_ui1.png  mapory_ui2.png
 ```
+
+實習與服務經歷已改用與專題相同的卡片樣式（`\expcard`），欄位包含 `arch` / `shotA` /
+`shotB` / `photo`，同樣用 `\safeimg` 引用；目前尚未指定圖片，缺圖時會顯示佔位框。
 
 ## 待補事項
 

@@ -92,8 +92,48 @@
     \pjShotRows
   \end{tabular}\par}
 
-% ---------- 經歷（簡式） ----------
+% ---------- 經歷（簡式，用於工讀／課程專題等篇幅較短的項目） ----------
 \newcommand{\exper}[3]{\par\noindent{\bfseries\color{navy}#1}\hfill #2\par\vspace{2pt}#3\par\vspace{9pt}}
+
+% ---------- 經歷卡片（key-value，樣式比照 \proj，用於實習／社團／服務等完整經歷） ----------
+\pgfkeys{/exp/.is family, /exp,
+  heading/.store in=\exHeading, org/.store in=\exOrg,
+  role/.store in=\exRole, period/.store in=\exPeriod,
+  super/.store in=\exSuper,
+  desc/.code={\long\gdef\exDesc{#1}},
+  arch/.store in=\exArch, shotA/.store in=\exShotA,
+  shotB/.store in=\exShotB, photo/.store in=\exPhoto}
+
+\newcounter{pjexp}
+
+\newcommand{\expcard}[1]{%
+  \def\exHeading{}\def\exOrg{}\def\exRole{}\def\exPeriod{}\def\exSuper{}%
+  \gdef\exDesc{}\def\exArch{}\def\exShotA{}\def\exShotB{}\def\exPhoto{}%
+  \pgfkeys{/exp,#1}%
+  \ifnum\value{pjexp}>0 \clearpage\fi\stepcounter{pjexp}\setwidths
+  \ifx\exArch\empty\def\exArchRows{}\else
+    \def\exArchRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 相關畫面／文件}\\\hline
+      \multicolumn{4}{|c|}{\safeimg{width=0.68\cwALL,height=4.3cm}{\exArch}}\\\hline}\fi
+  \ifx\exShotA\empty\ifx\exPhoto\empty\def\exShotRows{}\else\def\exShotRows{X}\fi\else\def\exShotRows{X}\fi
+  \ifx\exShotRows\empty\else
+    \def\exShotRows{\lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 工作／活動畫面}&%
+      \lab{2}{\cwCD}{\cellcolor{hdrfill}\color{navy}\bfseries 團隊照片／成果照片}\\\hline
+      \multicolumn{2}{|c|}{\ifx\exShotA\empty\else\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotA}\fi
+        \ifx\exShotB\empty\else\hspace{4pt}\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotB}\fi}&%
+      \multicolumn{2}{c|}{\ifx\exPhoto\empty\else\safeimg{height=3.6cm,width=0.92\cwCD}{\exPhoto}\fi}\\\hline}\fi
+  \ifx\exSuper\empty\def\exSuperRow{}\else
+    \def\exSuperRow{\lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 指導／主管}&\multicolumn{3}{p{\cwBCD}|}{\centering\exSuper}\\\hline}\fi
+  \par\vspace{0.5em}\noindent{\large\bfseries\color{navy} \thepjexp.\ \exHeading}\par\vspace{0.3em}
+  \noindent\begin{tabular}{|p{\cwA}|p{\cwB}|p{\cwC}|p{\cwD}|}\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 服務單位}&\multicolumn{3}{p{\cwBCD}|}{\centering\exOrg}\\\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 職稱／角色}&\multicolumn{3}{p{\cwBCD}|}{\centering\exRole}\\\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 服務期間}&\multicolumn{3}{p{\cwBCD}|}{\centering\exPeriod}\\\hline
+    \exSuperRow
+    \lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 內容}\\\hline
+    \multicolumn{4}{|p{\cwALL}|}{\setlength{\parindent}{2em}\exDesc}\\\hline
+    \exArchRows
+    \exShotRows
+  \end{tabular}\par}
 
 % ---------- 節標題（navy 粗體 + navy 底線，取代預設 \section*） ----------
 \newcommand{\gridsec}[1]{%
@@ -158,15 +198,15 @@
 
 % ---------------------------------------------------------------- 4
 \proj{
-  heading={2025 土地銀行校園金融創意競賽——金獎},
+  heading={2025 土地銀行校園金融創意競賽——全國冠軍},
   name={綠易通（Green E Pass）—— 中小企業 ESG 評分與綠色融資輔助平台},
   advisor={\todo{指導教授}},
   students={\todo{隊員姓名}},
-  contest={2025 土地銀行校園金融創意競賽 \todo{確認正式名稱}},
-  host={\todo{舉辦單位}},
-  award={金獎},
+  contest={土地銀行校園金融創意競賽},
+  host={\todo{舉辦單位（土地銀行？或與其他單位共同主辦）}},
+  award={全國冠軍},
   desc={協助中小企業評估 ESG 表現，並對應到綠色融資的貸款利率級距。核心是透明的 rule-based 100 分評分架構；LLM（Groq LLaMA 3.3 70B 與 Gemini）只負責把改善建議寫成易讀的說明，不參與評分，讓結果可以被稽核。後端使用 Node.js 與 Express，提供 14 個 REST API，並可輸出內嵌中文字型的 PDF 報告。
-  \par 我負責\todo{個人分工}。\todo{競賽名稱與獎項請與自傳統一：自傳為「校園金融創意挑戰賽——全國冠軍」，此處為「土地銀行校園金融創意競賽——金獎」}},
+  \par 我負責\todo{個人分工}。},
   arch={figures/greenepass_arch.png},
   shotA={figures/greenepass_ui1.png},
   photo={figures/greenepass_award.jpg}}
@@ -215,51 +255,59 @@
 
 % ---------------------------------------------------------------- 8
 \proj{
-  heading={大戶好家 Android App——永豐銀行產學合作},
-  name={大戶好家 Android App},
-  advisor={\todo{指導教授}},
-  students={\todo{團隊成員}},
-  contest={產學合作專案（為期 8 週）},
-  host={永豐銀行 數位金融處 行動應用開發團隊},
-  award={\todo{成果／驗收結果}},
-  desc={與永豐銀行數位金融處行動應用開發團隊進行為期 8 週的產學合作，開發 Android App。採用 Kotlin、Jetpack Compose、Hilt 與 Clean Architecture，並導入 RAG 問答機制。依保密協議，此處不揭露企業內部細節。
-  \par 我負責\todo{個人分工}。},
-  shotA={figures/dahu_ui1.png}}
-
-% ---------------------------------------------------------------- 9
-\proj{
-  heading={Mapory——地圖式社群回憶 App（個人專案）},
-  name={Mapory},
-  advisor={無（個人專案）},
-  students={韓欣澄（主要開發者）},
-  contest={個人專案},
-  host={—},
-  award={開發中},
-  desc={以地圖為核心的社群回憶 App。以 Kotlin 與 Jetpack Compose 開發，採 Clean Architecture；Room 儲存本地的 Memory 資料與圖片路徑，並規劃以 Firebase（Firestore、Storage、Auth）做雲端同步，由 WorkManager 處理背景同步，以 SyncStatus state machine 管理各筆資料的同步狀態。Avatar 與卡片模板的視覺素材與設計系朋友合作完成。},
-  arch={figures/mapory_arch.png},
-  shotA={figures/mapory_ui1.png}, shotB={figures/mapory_ui2.png}}
+  heading={2025 年生成式人工智慧創新應用國際競賽——Format-Fluid},
+  name={Format-Fluid: Solving the Knowledge-Modality Gap（知識模態轉譯引擎）},
+  advisor={\todo{指導教授（若有）}},
+  students={韓欣澄（國立中央大學資訊工程學系）、劉庭妤（國立中央大學土木工程學系）、韓松諺（國立臺北大學經濟學系）},
+  contest={2025 International Generative Artificial Intelligence Innovation Application Competition（2025 年生成式人工智慧創新應用國際競賽）},
+  host={\todo{舉辦單位}},
+  award={\todo{競賽成果（入圍／獲獎名次）}},
+  desc={針對「知識模態落差」（Knowledge-Modality Gap）問題——知識多以固定的文字格式呈現，卻不符合每個學習者不同的認知習慣——設計 Format-Fluid 智慧自適應學習引擎，以多階段序列式 AI Chain 將複雜文本轉譯為不同認知模態。Stage 1 以 GPT-4 Turbo 擔任「知識萃取者」，將原文解構為結構化 JSON（實體、因果關係、關鍵論點），去除原文的語氣與修辭；Stage 2 依使用者選擇的模式分別以不同 AI agent 生成創意藍圖：Podcast 模式生成師生對話腳本（Alice 提問、Bob 講解），Comic 模式生成四格漫畫分鏡與圖像提示，Summary 模式生成階層式重點摘要與生活化類比；Stage 3 以 OpenAI TTS API（雙音色）與 DALL-E 3 API 將藍圖轉為最終的語音與圖像成果，前端即時呈現。
+  \par 我負責\todo{個人分工，例如：系統架構設計、AI Chain 串接、後端開發等}。}}
 
 % =====================================================================
 \clearpage
 \gridsec{二、實習與服務經歷}
 
-\exper{Garmin（台灣）Web Application Services 團隊 Software Engineer Intern}{2026/07 起（在職）}
-{參與亞太地區多套對外網站系統的開發與維運，工作橫跨 data engineering、backend development 與 DevOps tooling，並完整經歷程式開發、Code Review、測試到部署的流程。}
+\expcard{
+  heading={Garmin（台灣）Web Application Services 團隊——Software Engineer Intern},
+  org={Garmin（台灣）Web Application Services 團隊},
+  role={Software Engineer Intern},
+  period={2026/07 起（在職）},
+  desc={參與亞太地區多套對外網站系統的開發與維運，工作橫跨 data engineering、backend development 與 DevOps tooling，並完整經歷程式開發、Code Review、測試到部署的流程。}}
 
-\exper{國立中央大學資訊工程學系學會 學術部共同創辦人暨副部長}{\todo{任期}}
-{大一起加入公關部，後續與同學共同成立學術部並擔任副部長。主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，累計超過 200 人次參與。\todo{確認頭銜是共同創辦「系學會」或「學術部」，兩份文件需一致}}
+\expcard{
+  heading={國立中央大學資訊工程學系學會——學術部共同創辦人暨副部長},
+  org={國立中央大學資訊工程學系學會},
+  role={學術部共同創辦人暨副部長},
+  period={\todo{任期}},
+  desc={大一起加入公關部，後續與同學共同建立學術部並擔任副部長。主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，累計超過 200 人次參與。}}
 
-\exper{AWS Educate 雲端校園大使}{\todo{期間}}
-{於校內推廣 AWS 雲端技術學習資源。\todo{補充具體推廣活動與成果}}
+\expcard{
+  heading={AWS Educate 雲端校園大使},
+  org={AWS Educate},
+  role={雲端校園大使},
+  period={\todo{期間}},
+  desc={於校內推廣 AWS 雲端技術學習資源。\todo{補充具體推廣活動與成果}}}
 
-\exper{國立中央大學 蔡宗翰教授實驗室 實習生}{\todo{期間}}
-{負責\textbf{教育部 AI CUP 全國競賽平台}的開發與維運。維運以 Django、Flask、PostgreSQL 與 Docker 建置的教育部 AI CUP 全國競賽平台，支援數千名參賽者的報名服務，並與趨勢科技、玉山金控等企業協作。針對伺服器故障風險，自行建立自動監控腳本與 LINE Bot 故障通知，並利用實驗室閒置機器架設備援主機，搭配自動 DNS failover；維運期間平台系統異常率相較往年降低 70\% 以上。}
+\expcard{
+  heading={國立中央大學 蔡宗翰教授實驗室——教育部 AI CUP 全國競賽平台開發與維運},
+  org={國立中央大學 蔡宗翰教授實驗室},
+  role={實習生},
+  period={\todo{期間}},
+  super={蔡宗翰 教授},
+  desc={負責\textbf{教育部 AI CUP 全國競賽平台}的開發與維運。平台以 Django、Flask、PostgreSQL 與 Docker 建置，支援數千名參賽者的報名服務，並與趨勢科技、玉山金控等企業協作。針對伺服器故障風險，自行建立自動監控腳本與 LINE Bot 故障通知，並利用實驗室閒置機器架設備援主機，搭配自動 DNS failover；維運期間平台系統異常率相較往年降低 70\% 以上。}}
 
+\expcard{
+  heading={教育部「新工程教育方法實驗與建構計畫」助教},
+  org={國立中央大學（教育部新工程教育方法實驗與建構計畫）},
+  role={課群建構計畫助教},
+  period={\todo{期間}},
+  desc={擔任中央大學參與之 C 類學院主題式課群建構計畫助教，並出席 115 年期中海報審查暨成果交流活動。}}
+
+\clearpage
 \exper{中央大學環境工程研究所 網路與伺服器系統管理（工讀）}{\todo{期間}}
 {負責研究所的網路與伺服器系統管理。}
-
-\exper{教育部「新工程教育方法實驗與建構計畫」助教}{\todo{期間}}
-{擔任中央大學參與之 C 類學院主題式課群建構計畫助教，並出席 115 年期中海報審查暨成果交流活動。}
 
 \exper{資訊與社會服務 II 課程專題 組長}{2025 春季學期}
 {帶領 7 人團隊製作 5 支資安知識影片，上架至中央大學資工系官方 YouTube 頻道。}
