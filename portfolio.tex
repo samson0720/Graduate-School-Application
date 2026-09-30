@@ -1,0 +1,267 @@
+% !TEX program = xelatex
+% 編譯：XeLaTeX（Overleaf 請把 Compiler 設成 XeLaTeX）
+% 圖片請放在 figures/ 資料夾；找不到圖時會自動顯示紅字佔位框，不會編譯失敗。
+% 紅字【待補：…】是我沒有資料、需要你確認或補上的地方。
+\documentclass[a4paper,11pt]{article}
+\usepackage[top=1.4cm,bottom=1.4cm,left=1.8cm,right=1.8cm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{graphicx,array,colortbl,xcolor,pgfkeys}
+\usepackage[hidelinks]{hyperref}
+
+% ---------- 字型（與簡歷、自傳同一套：中文標楷體、英文 Times New Roman） ----------
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{Liberation Serif}}
+\IfFontExistsTF{DFKai-SB}
+  {\setCJKmainfont[AutoFakeBold=2.5]{DFKai-SB}}
+  {\IfFontExistsTF{BiauKai}
+    {\setCJKmainfont[AutoFakeBold=2.5]{BiauKai}}
+    {\IfFontExistsTF{TW-Kai}
+      {\setCJKmainfont[AutoFakeBold=2.5]{TW-Kai}}
+      {\setCJKmainfont[AutoFakeBold=2.5]{AR PL UKai TW}}}}
+\xeCJKsetup{CJKecglue={\hskip 0.2em plus 0.1em}}
+
+\pagestyle{plain}
+\setlength{\parindent}{0pt}
+\renewcommand{\arraystretch}{1.25}
+
+% ---------- 顏色（與簡歷、自傳同一套） ----------
+\definecolor{navy}{RGB}{31,73,125}
+\definecolor{hdrfill}{RGB}{221,228,238}
+\arrayrulecolor{navy!55}
+\hypersetup{colorlinks=true,urlcolor=navy,linkcolor=navy}
+\newcommand{\hd}{hdrfill}
+\newcommand{\todo}[1]{\textcolor{red}{【待補：#1】}}
+
+% ---------- 圖片：找不到檔案就顯示佔位框 ----------
+\newcommand{\safeimg}[2]{%
+  \IfFileExists{#2}{\includegraphics[#1,keepaspectratio]{#2}}%
+  {\fbox{\parbox[c][3cm][c]{2.7cm}{\centering\footnotesize\textcolor{red}{【圖片待補】}\\\scriptsize\expandafter\detokenize\expandafter{#2}}}}}
+
+% ---------- 表格寬度（4 欄） ----------
+\newlength{\cwT}\newlength{\cwA}\newlength{\cwB}\newlength{\cwC}\newlength{\cwD}
+\newlength{\cwAB}\newlength{\cwBCD}\newlength{\cwCD}\newlength{\cwALL}
+\newcommand{\setwidths}{%
+  \setlength{\cwT}{\dimexpr\linewidth-8\tabcolsep-5\arrayrulewidth\relax}%
+  \setlength{\cwA}{0.20\cwT}\setlength{\cwB}{0.24\cwT}%
+  \setlength{\cwC}{0.32\cwT}\setlength{\cwD}{0.24\cwT}%
+  \setlength{\cwAB}{\dimexpr\cwA+\cwB+2\tabcolsep+\arrayrulewidth\relax}%
+  \setlength{\cwBCD}{\dimexpr\cwB+\cwC+\cwD+4\tabcolsep+2\arrayrulewidth\relax}%
+  \setlength{\cwCD}{\dimexpr\cwC+\cwD+2\tabcolsep+\arrayrulewidth\relax}%
+  \setlength{\cwALL}{\dimexpr\cwA+\cwB+\cwC+\cwD+6\tabcolsep+3\arrayrulewidth\relax}}
+
+% ---------- 專題欄位（key-value） ----------
+\pgfkeys{/proj/.is family, /proj,
+  heading/.store in=\pjHeading, name/.store in=\pjName,
+  advisor/.store in=\pjAdvisor, students/.store in=\pjStudents,
+  contest/.store in=\pjContest, host/.store in=\pjHost, award/.store in=\pjAward,
+  desc/.code={\long\gdef\pjDesc{#1}},
+  arch/.store in=\pjArch, shotA/.store in=\pjShotA,
+  shotB/.store in=\pjShotB, photo/.store in=\pjPhoto}
+
+\newcounter{pj}
+\newcommand{\lab}[2]{\multicolumn{#1}{|>{\centering\arraybackslash}p{#2}|}}
+
+\newcommand{\proj}[1]{%
+  \def\pjHeading{}\def\pjName{}\def\pjAdvisor{}\def\pjStudents{}%
+  \def\pjContest{}\def\pjHost{}\def\pjAward{}\gdef\pjDesc{}%
+  \def\pjArch{}\def\pjShotA{}\def\pjShotB{}\def\pjPhoto{}%
+  \pgfkeys{/proj,#1}%
+  \ifnum\value{pj}>0 \clearpage\fi\stepcounter{pj}\setwidths
+  \ifx\pjArch\empty\def\pjArchRows{}\else
+    \def\pjArchRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 架構圖}\\\hline
+      \multicolumn{4}{|c|}{\safeimg{width=0.68\cwALL,height=4.3cm}{\pjArch}}\\\hline}\fi
+  \ifx\pjShotA\empty\ifx\pjPhoto\empty\def\pjShotRows{}\else\def\pjShotRows{X}\fi\else\def\pjShotRows{X}\fi
+  \ifx\pjShotRows\empty\else
+    \def\pjShotRows{\lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 系統畫面}&%
+      \lab{2}{\cwCD}{\cellcolor{hdrfill}\color{navy}\bfseries 活動照片／成果照片}\\\hline
+      \multicolumn{2}{|c|}{\ifx\pjShotA\empty\else\safeimg{height=3.6cm,width=0.46\cwAB}{\pjShotA}\fi
+        \ifx\pjShotB\empty\else\hspace{4pt}\safeimg{height=3.6cm,width=0.46\cwAB}{\pjShotB}\fi}&%
+      \multicolumn{2}{c|}{\ifx\pjPhoto\empty\else\safeimg{height=3.6cm,width=0.92\cwCD}{\pjPhoto}\fi}\\\hline}\fi
+  \par\vspace{0.5em}\noindent{\large\bfseries\color{navy} \thepj.\ \pjHeading}\par\vspace{0.3em}
+  \noindent\begin{tabular}{|p{\cwA}|p{\cwB}|p{\cwC}|p{\cwD}|}\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 專題名稱}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjName}\\\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 指導教授}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjAdvisor}\\\hline
+    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 參與學生}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjStudents}\\\hline
+    \lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 競賽名稱}&\lab{1}{\cwC}{\cellcolor{hdrfill}\color{navy}\bfseries 舉辦單位}&\lab{1}{\cwD}{\cellcolor{hdrfill}\color{navy}\bfseries 獲獎榮譽}\\\hline
+    \multicolumn{2}{|>{\centering\arraybackslash}p{\cwAB}|}{\pjContest}&\multicolumn{1}{>{\centering\arraybackslash}p{\cwC}|}{\pjHost}&\multicolumn{1}{>{\centering\arraybackslash}p{\cwD}|}{\pjAward}\\\hline
+    \lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 簡介}\\\hline
+    \multicolumn{4}{|p{\cwALL}|}{\setlength{\parindent}{2em}\pjDesc}\\\hline
+    \pjArchRows
+    \pjShotRows
+  \end{tabular}\par}
+
+% ---------- 經歷（簡式） ----------
+\newcommand{\exper}[3]{\par\noindent{\bfseries\color{navy}#1}\hfill #2\par\vspace{2pt}#3\par\vspace{9pt}}
+
+% ---------- 節標題（navy 粗體 + navy 底線，取代預設 \section*） ----------
+\newcommand{\gridsec}[1]{%
+  \par\vspace{2pt}{\bfseries\fontsize{14}{17}\selectfont\color{navy}#1\par}%
+  \vspace{1pt}\noindent\textcolor{navy}{\rule{\linewidth}{0.8pt}}\par\vspace{4pt}}
+
+% =====================================================================
+\begin{document}
+
+\begin{center}
+  {\LARGE\bfseries\color{navy} 專題與經歷佐證資料}\\[6pt]
+  {\large 韓欣澄 Hsin-Cheng Han\quad|\quad 國立中央大學 資訊工程學系}\\[2pt]
+  116 學年度碩士班甄試 \quad 其他有利審查資料
+\end{center}
+\vspace{2pt}\noindent\textcolor{navy}{\rule{\linewidth}{0.9pt}}
+
+\gridsec{一、競賽與專題}
+
+% ---------------------------------------------------------------- 1
+\proj{
+  heading={2025 客語 AI 應用黑客松創意發想大賽——冠軍},
+  name={KaTch —— 客語影像辨識翻譯學習系統 APP},
+  advisor={國立中央大學資訊工程學系 周立德 教授},
+  students={陳品謙、張峪銓、韓欣澄},
+  contest={2025 客語 AI 應用黑客松創意發想大賽},
+  host={客家委員會},
+  award={冠軍},
+  desc={利用 Flutter 開發的跨平台 AI 學習 App，結合影像辨識與語言學習：使用者拍下身邊的物品，系統即時辨識並翻譯為客語。前端為 Flutter，後端以 Python Flask 提供 API，整合 Moondream 2 Vision-Language Model、Gemini 2.5 Flash 與客家委員會提供的客語語音與翻譯 API，支援四縣腔與海陸腔。功能包含客語辭典、拍照學單字、情境對話與單字記事本。本作品在 40 隊報名、10 隊進入決賽的競賽中獲得冠軍。
+  \par 我主要負責系統架構設計、拍照學單字與情境對話功能，並擔任團隊主講人。},
+  arch={figures/katch_arch.png},
+  shotA={figures/katch_ui1.png}, shotB={figures/katch_ui2.png},
+  photo={figures/katch_award.jpg}}
+
+% ---------------------------------------------------------------- 2
+\proj{
+  heading={基於多模態圖譜推論的可溯源會議知識檢索系統（GRASP）——佳作},
+  name={基於多模態圖譜推論的可溯源會議知識檢索系統},
+  advisor={國立中央大學資訊工程學系 周立德 教授},
+  students={韓欣澄、張峪銓},
+  contest={中央資工大學部專題實驗競賽},
+  host={國立中央大學資訊工程學系},
+  award={佳作},
+  desc={國際標準組織（如 W3C、IETF）累積了大量會議影片，沒有字幕時幾乎無法檢索。GRASP 以 OpenCV 做畫面遮罩與改良式 SSIM 擷取投影片，用 Phi-3.5-Vision 解析投影片內容、Whisper 產生帶時間戳記的逐字稿，再由 LLM 抽取 entity 與 relation，建立 Neo4j knowledge graph，並以 Louvain community detection 產生社群摘要，結合 LanceDB 向量檢索完成 GraphRAG 問答。每則回答都能追溯到影片秒數或投影片頁面。前端為 Chrome Extension（Manifest V3、Side Panel），後端部署於雲端，並以 Ragas 評估檢索與回答品質。本專題獲國科會大專生研究計畫支持。
+  \par 我負責 RAG 以外的系統部分，包含影片前處理、投影片解析、語音轉錄、多模態對齊與 Chrome Extension。\todo{確認最終分工}},
+  arch={figures/grasp_arch.png},
+  shotA={figures/grasp_ui1.png}, shotB={figures/grasp_ui2.png},
+  photo={figures/grasp_photo.jpg}}
+
+% ---------------------------------------------------------------- 3
+\proj{
+  heading={AI CUP ESG 承諾驗證競賽（VeriPromiseESG）——前標},
+  name={Hierarchy-Constrained Decision Calibration and Decoding for Multi-Task ESG Promise Verification},
+  advisor={國立中央大學資訊工程學系 周立德 教授、蔡宗翰 教授},
+  students={韓欣澄、陳俊瑋、陳聖勳},
+  contest={AI CUP 教育部全國大專校院人工智慧競賽——永續承諾驗證（VeriPromiseESG）},
+  host={教育部／台灣人工智慧學校},
+  award={前標},
+  desc={任務是對 ESG 報告書段落同時預測四個有階層限制的輸出欄位（PS、VT、ES、EQ），合法組合共 17 種。我們以 shared-encoder four-head RoBERTa 作為固定的 base model，只改變 calibration 與 output rule，比較 independent argmax、deterministic projection、class-bias calibration 與 17-state valid-state decoding。資料為 2,000 個段落、來自 49 份報告；採 rotating three-way cross-fitting，並同時評估 document-disjoint 與 same-document 兩種切分，以四欄加權 macro-F1 為主要指標。研究成果整理為 NTCIR-19 國際研討會論文提案（投稿中）。
+  \par 我負責報告與論文撰寫以外的所有部分，包含方法設計、模型訓練與實驗分析。},
+  arch={figures/esg_pipeline.png},
+  shotA={figures/esg_result.png}}
+
+% ---------------------------------------------------------------- 4
+\proj{
+  heading={2025 土地銀行校園金融創意競賽——金獎},
+  name={綠易通（Green E Pass）—— 中小企業 ESG 評分與綠色融資輔助平台},
+  advisor={\todo{指導教授}},
+  students={\todo{隊員姓名}},
+  contest={2025 土地銀行校園金融創意競賽 \todo{確認正式名稱}},
+  host={\todo{舉辦單位}},
+  award={金獎},
+  desc={協助中小企業評估 ESG 表現，並對應到綠色融資的貸款利率級距。核心是透明的 rule-based 100 分評分架構；LLM（Groq LLaMA 3.3 70B 與 Gemini）只負責把改善建議寫成易讀的說明，不參與評分，讓結果可以被稽核。後端使用 Node.js 與 Express，提供 14 個 REST API，並可輸出內嵌中文字型的 PDF 報告。
+  \par 我負責\todo{個人分工}。\todo{競賽名稱與獎項請與自傳統一：自傳為「校園金融創意挑戰賽——全國冠軍」，此處為「土地銀行校園金融創意競賽——金獎」}},
+  arch={figures/greenepass_arch.png},
+  shotA={figures/greenepass_ui1.png},
+  photo={figures/greenepass_award.jpg}}
+
+% ---------------------------------------------------------------- 5
+\proj{
+  heading={2025 中央資工校內網路應用創意競賽——金牌獎},
+  name={\todo{作品名稱}},
+  advisor={國立中央大學資訊工程學系 周立德 教授（計算機網路課程）},
+  students={\todo{四位隊員姓名}},
+  contest={網路應用創意競賽},
+  host={國立中央大學資訊工程學系},
+  award={金牌獎},
+  desc={\todo{作品簡介與個人負責部分}},
+  arch={figures/netapp_arch.png},
+  shotA={figures/netapp_ui1.png}}
+
+% ---------------------------------------------------------------- 6
+\proj{
+  heading={AI CUP 基於時序資料之桌球戰術與結果預測競賽——佳作},
+  name={桌球戰術預測：LightGBM + Markov ensemble},
+  advisor={國立中央大學資訊工程學系 周立德 教授、蔡宗翰 教授},
+  students={韓欣澄、陳俊瑋、陳聖勳},
+  contest={AI CUP 基於時序資料之桌球戰術與結果預測競賽},
+  host={教育部／台灣人工智慧學校},
+  award={佳作},
+  desc={預測桌球比賽中的戰術。以 LightGBM 搭配 Markov ensemble 建模，並使用 GroupKFold 驗證。過程中發現 public leaderboard 的分數因 data leakage（serverGetPoint 與舊測試資料重疊）而被灌水，因此改以 private-safe baseline 評估模型，避免被虛高的排行榜分數誤導。
+  \par 我負責報告撰寫以外的所有部分，包含特徵工程、模型訓練與 leakage 排查。},
+  arch={figures/tt_pipeline.png},
+  shotA={figures/tt_result.png}}
+
+% ---------------------------------------------------------------- 7
+\proj{
+  heading={HLB 智慧驅鳥系統——新工程教育計畫課程專題},
+  name={HLB 智慧驅鳥系統（IoT + AI 風力發電機驅鳥）},
+  advisor={\todo{課程／指導教師}},
+  students={\todo{隊員姓名}},
+  contest={中央大學工學院苗圃工坊（114-1）},
+  host={國立中央大學工學院},
+  award={代表學校參展},
+  desc={以 IoT 與 AI 為風力發電機設計的驅鳥系統，降低鳥類撞擊風機的風險。\todo{補充系統做法：偵測方式、硬體與模型}
+  \par 我負責全部的軟體開發，並代表學校參展。},
+  arch={figures/hlb_arch.png},
+  shotA={figures/hlb_ui1.png},
+  photo={figures/hlb_expo.jpg}}
+
+% ---------------------------------------------------------------- 8
+\proj{
+  heading={大戶好家 Android App——永豐銀行產學合作},
+  name={大戶好家 Android App},
+  advisor={\todo{指導教授}},
+  students={\todo{團隊成員}},
+  contest={產學合作專案（為期 8 週）},
+  host={永豐銀行 數位金融處 行動應用開發團隊},
+  award={\todo{成果／驗收結果}},
+  desc={與永豐銀行數位金融處行動應用開發團隊進行為期 8 週的產學合作，開發 Android App。採用 Kotlin、Jetpack Compose、Hilt 與 Clean Architecture，並導入 RAG 問答機制。依保密協議，此處不揭露企業內部細節。
+  \par 我負責\todo{個人分工}。},
+  shotA={figures/dahu_ui1.png}}
+
+% ---------------------------------------------------------------- 9
+\proj{
+  heading={Mapory——地圖式社群回憶 App（個人專案）},
+  name={Mapory},
+  advisor={無（個人專案）},
+  students={韓欣澄（主要開發者）},
+  contest={個人專案},
+  host={—},
+  award={開發中},
+  desc={以地圖為核心的社群回憶 App。以 Kotlin 與 Jetpack Compose 開發，採 Clean Architecture；Room 儲存本地的 Memory 資料與圖片路徑，並規劃以 Firebase（Firestore、Storage、Auth）做雲端同步，由 WorkManager 處理背景同步，以 SyncStatus state machine 管理各筆資料的同步狀態。Avatar 與卡片模板的視覺素材與設計系朋友合作完成。},
+  arch={figures/mapory_arch.png},
+  shotA={figures/mapory_ui1.png}, shotB={figures/mapory_ui2.png}}
+
+% =====================================================================
+\clearpage
+\gridsec{二、實習與服務經歷}
+
+\exper{Garmin（台灣）Web Application Services 團隊 Software Engineer Intern}{2026/07 起（在職）}
+{參與亞太地區多套對外網站系統的開發與維運，工作橫跨 data engineering、backend development 與 DevOps tooling，並完整經歷程式開發、Code Review、測試到部署的流程。}
+
+\exper{國立中央大學資訊工程學系學會 學術部共同創辦人暨副部長}{\todo{任期}}
+{大一起加入公關部，後續與同學共同成立學術部並擔任副部長。主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，累計超過 200 人次參與。\todo{確認頭銜是共同創辦「系學會」或「學術部」，兩份文件需一致}}
+
+\exper{AWS Educate 雲端校園大使}{\todo{期間}}
+{於校內推廣 AWS 雲端技術學習資源。\todo{補充具體推廣活動與成果}}
+
+\exper{國立中央大學 蔡宗翰教授實驗室 實習生}{\todo{期間}}
+{負責\textbf{教育部 AI CUP 全國競賽平台}的開發與維運。維運以 Django、Flask、PostgreSQL 與 Docker 建置的教育部 AI CUP 全國競賽平台，支援數千名參賽者的報名服務，並與趨勢科技、玉山金控等企業協作。針對伺服器故障風險，自行建立自動監控腳本與 LINE Bot 故障通知，並利用實驗室閒置機器架設備援主機，搭配自動 DNS failover；維運期間平台系統異常率相較往年降低 70\% 以上。}
+
+\exper{中央大學環境工程研究所 網路與伺服器系統管理（工讀）}{\todo{期間}}
+{負責研究所的網路與伺服器系統管理。}
+
+\exper{教育部「新工程教育方法實驗與建構計畫」助教}{\todo{期間}}
+{擔任中央大學參與之 C 類學院主題式課群建構計畫助教，並出席 115 年期中海報審查暨成果交流活動。}
+
+\exper{資訊與社會服務 II 課程專題 組長}{2025 春季學期}
+{帶領 7 人團隊製作 5 支資安知識影片，上架至中央大學資工系官方 YouTube 頻道。}
+
+\end{document}

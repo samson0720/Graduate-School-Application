@@ -1,0 +1,24 @@
+# LaTeX 編譯產物
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.xdv
+*.nav
+*.snm
+*.vrb
+build/
+
+# 編譯出的 PDF（若要保留成品，改為只忽略 build/）
+*.pdf
+!成品/*.pdf
+
+# 作業系統
+.DS_Store
+Thumbs.db

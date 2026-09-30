@@ -1,0 +1,213 @@
+% =====================================================================
+%  自傳（設計版）
+%  編譯：xelatex autobio_design.tex
+% =====================================================================
+\documentclass[10.5pt,a4paper]{article}
+
+\usepackage[a4paper,top=0.6cm,bottom=0.8cm,left=1.6cm,right=1.6cm]{geometry}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage[skins,breakable]{tcolorbox}
+\usepackage{ragged2e}
+
+% 英文：Times New Roman
+\IfFontExistsTF{Times New Roman}
+  {\setmainfont{Times New Roman}}
+  {\setmainfont{Liberation Serif}}
+
+% 中文：標楷體
+\IfFontExistsTF{DFKai-SB}
+  {\setCJKmainfont[AutoFakeBold=2.6]{DFKai-SB}}
+  {\IfFontExistsTF{BiauKai}
+    {\setCJKmainfont[AutoFakeBold=2.6]{BiauKai}}
+    {\IfFontExistsTF{TW-Kai}
+      {\setCJKmainfont[AutoFakeBold=2.6]{TW-Kai}}
+      {\setCJKmainfont[AutoFakeBold=2.6]{AR PL UKai TW}}}}
+
+\newcommand{\cjktitlefont}{}
+
+\definecolor{ink}{RGB}{35,38,45}
+\definecolor{navytitle}{RGB}{24,33,48}
+\definecolor{bluemed}{RGB}{58,92,140}
+\definecolor{blobA}{RGB}{198,214,235}
+\definecolor{blobB}{RGB}{222,232,245}
+\definecolor{secbg}{RGB}{237,242,248}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\linespread{1.12}
+
+% ---------- 小工具 ----------
+\newcommand{\filledrule}{%
+  \leavevmode{\color{bluemed!55}\leaders\hrule height0.8pt\hfill}
+}
+
+\newcommand{\tracked}[1]{%
+  \begingroup
+  \fontdimen2\font=1.6\fontdimen2\font
+  \relax#1
+  \endgroup
+}
+
+% 區塊標題：左側粗色豎線 + 標題 + ｜ + 副標
+\newcommand{\sechead}[2]{%
+  {\color{bluemed}\rule{3.6pt}{15pt}}\hspace{7pt}%
+  {\cjktitlefont\bfseries\fontsize{14}{16}\selectfont\color{bluemed}#1}%
+  {\fontsize{13}{16}\selectfont\color{bluemed}\ \textbar\ }%
+  {\cjktitlefont\bfseries\fontsize{13}{16}\selectfont\color{bluemed}#2}\par
+}
+
+% 內文段落
+\newcommand{\secbody}[1]{%
+  \vspace{5pt}
+  {\color{ink}\fontsize{10.3}{16.5}\selectfont #1\par}
+}
+
+\begin{document}
+
+% ===================== 頁首裝飾 + 標題 =====================
+\begin{tikzpicture}[remember picture,overlay]
+  \node[anchor=north west,inner sep=0pt]
+  at ([xshift=-0.3cm,yshift=-0.1cm]current page.north west) {%
+    \begin{tikzpicture}
+      \fill[blobB,opacity=0.55] (1.1,-1.3) circle (2.1cm);
+      \fill[blobA,opacity=0.55] (2.0,-0.6) circle (1.5cm);
+      \fill[blobB,opacity=0.6]  (0.5,-2.4) circle (1.0cm);
+    \end{tikzpicture}
+  };
+\end{tikzpicture}
+
+\vspace{2pt}
+
+{\cjktitlefont\bfseries\fontsize{40}{44}\selectfont
+\color{navytitle}自\,傳}\par
+
+\vspace{2pt}
+
+\noindent
+{\fontsize{8.6}{11}\selectfont
+\color{bluemed}
+\addfontfeature{LetterSpace=8}PERSONAL\ STATEMENT}%
+\hspace{10pt}
+\filledrule
+\hspace{4pt}
+\raise2.2pt\hbox{\color{bluemed}\textbullet}\par
+
+\vspace{18pt}
+
+
+% ===================== 一、求學歷程 =====================
+
+\sechead{求學歷程}{在探索中找到學習方向}
+
+\secbody{
+大一時，我的學業表現較為平穩，對想深入的方向也還沒有明確想法。
+到了大二，我發現自己對物件導向、資料結構等觀念仍不夠扎實，因此開始利用課外時間主動補強，也透過專案與競賽將所學實際應用。
+隨著接觸的領域增加，我逐漸找到真正感興趣的方向，也開始更主動投入課業。
+大三之後，我進一步修習多門碩博同修課程，\textbf{成績皆維持在課程前 1\%}，並在大三上、下兩學期皆取得\textbf{班排名第 1、系排名第 2}，連續獲得\textbf{兩次書卷獎}。
+}
+
+\vspace{11pt}
+
+
+% ===================== 二、研究經驗（淺藍底） =====================
+
+\begin{tcolorbox}[
+  enhanced,
+  breakable,
+  frame hidden,
+  colback=secbg,
+  colframe=secbg,
+  boxrule=0pt,
+  arc=2pt,
+  grow to left by=26pt,
+  grow to right by=26pt,
+  left=26pt,
+  right=26pt,
+  top=12pt,
+  bottom=12pt,
+  boxsep=0pt
+]
+
+\sechead{研究經驗}{從專題實作逐步培養研究能力}
+
+\secbody{
+大三時，我加入周立德教授的實驗室，並自主發想「基於多模態圖譜推論的可溯源會議知識檢索系統」作為研究主題，整合會議中的逐字稿、畫面資訊與投影片轉場，希望系統除了能回答問題，也能讓使用者找到回答所依據的原始內容。
+這是我第一次完整參與研究專題，也讓我逐漸熟悉論文閱讀、資料整理與實驗設計，成果獲得\textbf{中央資工大學部專題實驗競賽佳作}，並以此執行\textbf{國科會大專生研究計畫}。
+}
+
+\vspace{6pt}
+
+\secbody{
+有了專題研究的經驗後，我進一步將 AI CUP 永續承諾驗證競賽成果延伸成研究，重新檢視不同判斷方式對模型結果的影響。
+研究過程中，我開始更加重視實驗設計與驗證方式，而不只是單一模型分數。
+目前研究成果已整理成論文，投稿至\textbf{ NTCIR-19 國際研討會}。
+}
+
+\end{tcolorbox}
+
+\vspace{11pt}
+
+
+% ===================== 三、實務經驗 =====================
+
+\sechead{實務經驗}{從開發中認識真實系統}
+
+\secbody{
+除了研究之外，我也希望了解技術在真實環境中如何運作。
+大三暑假起，我在 \textbf{Garmin} 擔任 Software Engineer Intern，參與亞太區多套系統的開發與維護，實際經歷程式開發、Code Review、測試到部署的完整流程。
+大三起，我也在蔡宗翰教授的實驗室擔任實習生，負責\textbf{教育部 AI CUP 全國競賽平台}的開發與維運，支援數千名參賽者的報名服務，並與趨勢科技、玉山等企業協作。
+在我負責維運期間，\textbf{平台系統異常率相較往年降低 70\% 以上}。
+這些經驗讓我更了解大型系統開發與維運的樣貌，也培養了面對問題時逐步釐清原因的習慣。
+}
+
+\vspace{11pt}
+
+
+% ===================== 四、競賽實作（淺藍底） =====================
+
+\begin{tcolorbox}[
+  enhanced,
+  breakable,
+  frame hidden,
+  colback=secbg,
+  colframe=secbg,
+  boxrule=0pt,
+  arc=2pt,
+  grow to left by=26pt,
+  grow to right by=26pt,
+  left=26pt,
+  right=26pt,
+  top=12pt,
+  bottom=12pt,
+  boxsep=0pt
+]
+
+\sechead{競賽實作}{把想法做成完整作品}
+
+\secbody{
+課外時間，我也喜歡透過競賽接觸不同領域的技術應用。
+曾與團隊開發結合影像與生成式 AI 的客語情境學習 App，獲得\textbf{2025 客語 AI 應用黑客松冠軍}；也曾為土地銀行開發協助中小企業進行 ESG 評估與轉型的平台，獲得\textbf{校園金融創意挑戰賽全國冠軍}。
+此外，我也參與 AI CUP、生成式 AI 國際競賽與校內專題競賽並取得佳績。
+這些經驗讓我學習如何從實際需求出發，與團隊一起將想法完成並落地。
+}
+
+\end{tcolorbox}
+
+\vspace{11pt}
+
+
+% ===================== 五、團隊參與 =====================
+
+\sechead{團隊參與}{在合作中累積經驗}
+
+\secbody{
+除了課業與技術實作，我也投入系上的活動與服務。
+我與幾位同學共同成立資工系學會學術部，並擔任副部長，主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，\textbf{累計超過 200 人次參與}。
+此外，我也曾擔任教育部新工程教育計畫助教，目前則擔任 \textbf{AWS Educate 雲端校園大使}。
+這些經歷讓我在技術之外，也累積了活動規劃、溝通協調與團隊合作的經驗。
+}
+
+\end{document}
