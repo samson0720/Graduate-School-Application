@@ -8,17 +8,20 @@
 | --- | --- | --- |
 | `autobiography.tex` | 自傳（Personal Statement） | XeLaTeX |
 | `portfolio.tex` | 專題與經歷佐證資料（其他有利審查資料） | XeLaTeX |
+| `resume.tex` | 簡歷（單頁） | XeLaTeX |
 | `figures/` | `portfolio.tex` 引用的圖片 | — |
-| `CHECKLIST.md` | 送出前待補與待確認事項 | — |
+| `photos/photo.jpg` | `resume.tex` 引用的大頭照 | — |
+| `CHECKLIST.md` | 送出前待補與待確認事項（含三份文件間的矛盾） | — |
 
 ## 編譯
 
-兩份文件都必須用 **XeLaTeX**（使用 `fontspec` / `xeCJK`）。在 Overleaf 請於
+三份文件都必須用 **XeLaTeX**（使用 `fontspec` / `xeCJK`）。在 Overleaf 請於
 `Menu → Compiler` 選 `XeLaTeX`。
 
 ```bash
 xelatex autobiography.tex
 xelatex portfolio.tex
+xelatex resume.tex
 ```
 
 字型：中文優先使用標楷體（DFKai-SB / BiauKai / TW-Kai），英文 Times New Roman；
