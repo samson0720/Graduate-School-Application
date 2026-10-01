@@ -30,20 +30,30 @@ xelatex resume.tex
 ## 圖片
 
 `portfolio.tex` 用 `\safeimg` 引用圖片，**檔案不存在時會顯示紅字「【圖片待補】」佔位框，
-不會中斷編譯**。需要放進 `figures/` 的檔案：
+佔位框尺寸會跟著實際要求的寬高縮放，不會中斷編譯**。需要放進 `figures/` 的檔案：
 
 ```
-katch_arch.png  katch_ui1.png  katch_ui2.png  katch_award.jpg
-grasp_arch.png  grasp_ui1.png  grasp_ui2.png  grasp_photo.jpg
-esg_pipeline.png  esg_result.png
-greenepass_arch.png  greenepass_ui1.png  greenepass_award.jpg
-netapp_arch.png  netapp_ui1.png
-tt_pipeline.png  tt_result.png
-hlb_arch.png  hlb_ui1.png  hlb_expo.jpg
+# 壹、競賽成果
+katch_arch.png  katch_ui1.png  katch_ui2.png  katch_ui3.png  katch_award.jpg
+greenepass_arch.png  greenepass_ui1.png  greenepass_ui2.png
+netapp_arch.png  netapp_ui1.png  netapp_ui2.png  netapp_photo.jpg
+tt_pipeline.png
+hlb_arch.png  hlb_ui1.png  hlb_ui2.png  hlb_expo.jpg
+ff_podcast.jpg  ff_comic.jpg  ff_summary.jpg
+
+# 貳、研究專題與論文
+grasp_arch.png  grasp_graphrag.png  grasp_ui1.png  grasp_ui2.png
+esg_hierarchy.png  esg_rules.png
+
+# 參、實習與實務專案
+silkyjade_home.png  silkyjade_1.png  silkyjade_2.png
+
+# 伍、附錄：獲獎證明
+cert_katch.jpg  cert_greenepass.jpg  cert_ncu_project.jpg
 ```
 
-實習與服務經歷已改用與專題相同的卡片樣式（`\expcard`），欄位包含 `arch` / `shotA` /
-`shotB` / `photo`，同樣用 `\safeimg` 引用；目前尚未指定圖片，缺圖時會顯示佔位框。
+實習與服務經歷使用與專題相同的卡片樣式（`\expcard`，支援 `arch` / `archlabel` /
+`shotA` / `shotB` / `shotlabel` / `photo` / `photolabel`），同樣用 `\safeimg` 引用。
 
 ## 待補事項
 

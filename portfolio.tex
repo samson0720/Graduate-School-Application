@@ -35,9 +35,24 @@
 \newcommand{\todo}[1]{\textcolor{red}{【待補：#1】}}
 
 % ---------- 圖片：找不到檔案就顯示佔位框 ----------
+% 佔位框尺寸會依 #1 裡的 width/height 自動縮放（而非固定 2.7cm×3cm）。
+% 固定尺寸在排 3 張並排縮圖（如 shotC）時會比欄位還寬，溢出的量大到讓
+% colortbl 算錯同一張表格裡其他列（甚至更早的列）的 \cellcolor 色塊寬度，
+% 在表格裡留下一道沒上色的縫隙——問題不在縮圖本身，而在佔位框。
+% 找不到檔案時的說明文字改用 \nolinkurl（hyperref／url 套件），可在
+% 「/」「.」等字元處自然換行，避免檔名在窄欄位裡擠出框外。
+\pgfkeys{/safeimg/.is family, /safeimg,
+  width/.store in=\simgW, height/.store in=\simgH,
+  keepaspectratio/.style={}}
 \newcommand{\safeimg}[2]{%
   \IfFileExists{#2}{\includegraphics[#1,keepaspectratio]{#2}}%
-  {\fbox{\parbox[c][3cm][c]{2.7cm}{\centering\footnotesize\textcolor{red}{【圖片待補】}\\\scriptsize\expandafter\detokenize\expandafter{#2}}}}}
+  {\begingroup
+    \def\simgW{2.7cm}\def\simgH{3cm}%
+    \pgfkeys{/safeimg,#1}%
+    \fbox{\parbox[c][\simgH][c]{\dimexpr\simgW-2\fboxsep-2\fboxrule\relax}{%
+      \centering\footnotesize\textcolor{red}{【圖片待補】}\\%
+      \centering\fontsize{5.5}{6.8}\selectfont\nolinkurl{#2}}}%
+  \endgroup}}
 
 % ---------- 表格寬度（4 欄） ----------
 \newlength{\cwT}\newlength{\cwA}\newlength{\cwB}\newlength{\cwC}\newlength{\cwD}
@@ -56,39 +71,92 @@
   heading/.store in=\pjHeading, name/.store in=\pjName,
   advisor/.store in=\pjAdvisor, students/.store in=\pjStudents,
   contest/.store in=\pjContest, host/.store in=\pjHost, award/.store in=\pjAward,
+  contestlabel/.store in=\pjContestLabel, hostlabel/.store in=\pjHostLabel,
+  awardlabel/.store in=\pjAwardLabel,
   desc/.code={\long\gdef\pjDesc{#1}},
-  arch/.store in=\pjArch, shotA/.store in=\pjShotA,
-  shotB/.store in=\pjShotB, photo/.store in=\pjPhoto}
+  arch/.store in=\pjArch, archlabel/.store in=\pjArchLabel,
+  wide/.store in=\pjWide, widelabel/.store in=\pjWideLabel,
+  shotA/.store in=\pjShotA, shotB/.store in=\pjShotB, shotC/.store in=\pjShotC,
+  shotlabel/.store in=\pjShotLabel, photofull/.store in=\pjPhotoFull, photoh/.store in=\pjPhotoH,
+  photo/.store in=\pjPhoto, photolabel/.store in=\pjPhotoLabel,
+  archh/.store in=\pjArchH, shoth/.store in=\pjShotH, wideh/.store in=\pjWideH}
 
 \newcounter{pj}
+\newcounter{pjcert}
 \newcommand{\lab}[2]{\multicolumn{#1}{|>{\centering\arraybackslash}p{#2}|}}
+\newcommand{\hdcell}[3]{\lab{#1}{#2}{\cellcolor{hdrfill}\color{navy}\bfseries #3}}
+% 標籤文字都很短、不需要垂直置中，直接沿用已驗證沒問題的 \hdcell（p{} 欄位）。
+\newcommand{\vhd}[3]{\hdcell{#1}{#2}{#3}}
+\newcommand{\vcell}[3]{\multicolumn{#1}{>{\centering\arraybackslash}m{#2}|}{#3}}
+% 儲存格內的列點：各行靠左、整塊置中，行間用 \\ 分隔
+\newcommand{\blist}[1]{{\footnotesize\begin{tabular}[c]{@{}l@{}}#1\end{tabular}}}
+\newcommand{\bi}{\textbullet\,}
 
 \newcommand{\proj}[1]{%
   \def\pjHeading{}\def\pjName{}\def\pjAdvisor{}\def\pjStudents{}%
   \def\pjContest{}\def\pjHost{}\def\pjAward{}\gdef\pjDesc{}%
-  \def\pjArch{}\def\pjShotA{}\def\pjShotB{}\def\pjPhoto{}%
+  \def\pjContestLabel{競賽名稱}\def\pjHostLabel{舉辦單位}\def\pjAwardLabel{獲獎榮譽}%
+  \def\pjArch{}\def\pjArchLabel{架構圖}\def\pjWide{}\def\pjWideLabel{系統畫面}%
+  \def\pjShotA{}\def\pjShotB{}\def\pjShotC{}\def\pjShotLabel{系統畫面}%
+  \def\pjPhotoFull{}\def\pjPhotoH{}%
+  \def\pjPhoto{}\def\pjPhotoLabel{活動照片／成果照片}\def\pjArchH{4.3cm}\def\pjShotH{4.2cm}\def\pjWideH{}%
   \pgfkeys{/proj,#1}%
   \ifnum\value{pj}>0 \clearpage\fi\stepcounter{pj}\setwidths
+  \ifx\pjAdvisor\empty\def\pjAdvisorRow{}\else
+    \def\pjAdvisorRow{\vhd{1}{\cwA}{指導教授}&\vcell{3}{\cwBCD}{\pjAdvisor}\\\hline}\fi
   \ifx\pjArch\empty\def\pjArchRows{}\else
-    \def\pjArchRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 架構圖}\\\hline
-      \multicolumn{4}{|c|}{\safeimg{width=0.68\cwALL,height=4.3cm}{\pjArch}}\\\hline}\fi
-  \ifx\pjShotA\empty\ifx\pjPhoto\empty\def\pjShotRows{}\else\def\pjShotRows{X}\fi\else\def\pjShotRows{X}\fi
-  \ifx\pjShotRows\empty\else
-    \def\pjShotRows{\lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 系統畫面}&%
-      \lab{2}{\cwCD}{\cellcolor{hdrfill}\color{navy}\bfseries 活動照片／成果照片}\\\hline
-      \multicolumn{2}{|c|}{\ifx\pjShotA\empty\else\safeimg{height=3.6cm,width=0.46\cwAB}{\pjShotA}\fi
-        \ifx\pjShotB\empty\else\hspace{4pt}\safeimg{height=3.6cm,width=0.46\cwAB}{\pjShotB}\fi}&%
-      \multicolumn{2}{c|}{\ifx\pjPhoto\empty\else\safeimg{height=3.6cm,width=0.92\cwCD}{\pjPhoto}\fi}\\\hline}\fi
+    \def\pjArchRows{\hdcell{4}{\cwALL}{\pjArchLabel}\\\hline
+      \multicolumn{4}{|c|}{\rule{0pt}{\dimexpr\pjArchH+2mm}\safeimg{width=0.95\cwALL,height=\pjArchH}{\pjArch}}\\\hline}\fi
+  \ifx\pjWide\empty\def\pjWideRows{}\else
+    \def\pjWideRows{\hdcell{4}{\cwALL}{\pjWideLabel}\\\hline
+      \multicolumn{4}{|c|}{\rule{0pt}{\dimexpr\pjWideH+2mm}\safeimg{width=0.95\cwALL,height=\pjWideH}{\pjWide}}\\\hline}\fi
+  \ifx\pjPhotoH\empty\let\pjPhotoH\pjShotH\fi \ifx\pjWideH\empty\let\pjWideH\pjArchH\fi
+  \ifx\pjShotC\empty\def\pjShotW{0.46}\else\def\pjShotW{0.30}\fi
+  \def\pjShotsFull{\rule{0pt}{\dimexpr\pjShotH+2mm}\safeimg{height=\pjShotH,width=\pjShotW\cwALL}{\pjShotA}%
+    \ifx\pjShotB\empty\else\hspace{6pt}\safeimg{height=\pjShotH,width=\pjShotW\cwALL}{\pjShotB}\fi
+    \ifx\pjShotC\empty\else\hspace{6pt}\safeimg{height=\pjShotH,width=\pjShotW\cwALL}{\pjShotC}\fi}%
+  \def\pjShotRows{}%
+  \ifx\pjShotA\empty
+    \ifx\pjPhoto\empty\else
+      \def\pjShotRows{\hdcell{4}{\cwALL}{\pjPhotoLabel}\\\hline
+        \multicolumn{4}{|c|}{\rule{0pt}{\dimexpr\pjPhotoH+2mm}\safeimg{height=\pjPhotoH,width=0.9\cwALL}{\pjPhoto}}\\\hline}%
+    \fi
+  \else
+    \ifx\pjPhoto\empty
+      \def\pjShotRows{\hdcell{4}{\cwALL}{\pjShotLabel}\\\hline
+        \multicolumn{4}{|c|}{\pjShotsFull}\\\hline}%
+    \else
+      \ifx\pjPhotoFull\empty
+        \def\pjShotRows{\hdcell{2}{\cwAB}{\pjShotLabel}&\hdcell{2}{\cwCD}{\pjPhotoLabel}\\\hline
+          \multicolumn{2}{|c|}{\rule{0pt}{\dimexpr\pjShotH+2mm}%
+            \ifx\pjShotC\empty
+              \safeimg{height=\pjShotH,width=0.46\cwAB}{\pjShotA}%
+              \ifx\pjShotB\empty\else\hspace{4pt}\safeimg{height=\pjShotH,width=0.46\cwAB}{\pjShotB}\fi
+            \else
+              \safeimg{height=\pjShotH,width=0.30\cwAB}{\pjShotA}\hspace{3pt}%
+              \safeimg{height=\pjShotH,width=0.30\cwAB}{\pjShotB}\hspace{3pt}%
+              \safeimg{height=\pjShotH,width=0.30\cwAB}{\pjShotC}%
+            \fi}&%
+          \multicolumn{2}{c|}{\safeimg{height=\pjPhotoH,width=0.92\cwCD}{\pjPhoto}}\\\hline}%
+      \else
+        \def\pjShotRows{\hdcell{4}{\cwALL}{\pjShotLabel}\\\hline
+          \multicolumn{4}{|c|}{\pjShotsFull}\\\hline
+          \hdcell{4}{\cwALL}{\pjPhotoLabel}\\\hline
+          \multicolumn{4}{|c|}{\rule{0pt}{\dimexpr\pjPhotoH+2mm}\safeimg{height=\pjPhotoH,width=0.9\cwALL}{\pjPhoto}}\\\hline}%
+      \fi
+    \fi
+  \fi
   \par\vspace{0.5em}\noindent{\large\bfseries\color{navy} \thepj.\ \pjHeading}\par\vspace{0.3em}
   \noindent\begin{tabular}{|p{\cwA}|p{\cwB}|p{\cwC}|p{\cwD}|}\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 專題名稱}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjName}\\\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 指導教授}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjAdvisor}\\\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 參與學生}&\multicolumn{3}{p{\cwBCD}|}{\centering\pjStudents}\\\hline
-    \lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 競賽名稱}&\lab{1}{\cwC}{\cellcolor{hdrfill}\color{navy}\bfseries 舉辦單位}&\lab{1}{\cwD}{\cellcolor{hdrfill}\color{navy}\bfseries 獲獎榮譽}\\\hline
-    \multicolumn{2}{|>{\centering\arraybackslash}p{\cwAB}|}{\pjContest}&\multicolumn{1}{>{\centering\arraybackslash}p{\cwC}|}{\pjHost}&\multicolumn{1}{>{\centering\arraybackslash}p{\cwD}|}{\pjAward}\\\hline
-    \lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 簡介}\\\hline
+    \vhd{1}{\cwA}{專題名稱}&\vcell{3}{\cwBCD}{\pjName}\\\hline
+    \pjAdvisorRow
+    \vhd{1}{\cwA}{參與學生}&\vcell{3}{\cwBCD}{\pjStudents}\\\hline
+    \vhd{2}{\cwAB}{\pjContestLabel}&\vhd{1}{\cwC}{\pjHostLabel}&\vhd{1}{\cwD}{\pjAwardLabel}\\\hline
+    \multicolumn{2}{|>{\centering\arraybackslash}m{\cwAB}|}{\pjContest}&\vcell{1}{\cwC}{\pjHost}&\vcell{1}{\cwD}{\pjAward}\\\hline
+    \hdcell{4}{\cwALL}{簡介}\\\hline
     \multicolumn{4}{|p{\cwALL}|}{\setlength{\parindent}{2em}\pjDesc}\\\hline
     \pjArchRows
+    \pjWideRows
     \pjShotRows
   \end{tabular}\par}
 
@@ -101,39 +169,64 @@
   role/.store in=\exRole, period/.store in=\exPeriod,
   super/.store in=\exSuper,
   desc/.code={\long\gdef\exDesc{#1}},
-  arch/.store in=\exArch, shotA/.store in=\exShotA,
-  shotB/.store in=\exShotB, photo/.store in=\exPhoto}
+  arch/.store in=\exArch, archlabel/.store in=\exArchLabel,
+  shotA/.store in=\exShotA, shotB/.store in=\exShotB,
+  shotlabel/.store in=\exShotLabel,
+  photo/.store in=\exPhoto, photolabel/.store in=\exPhotoLabel}
 
 \newcounter{pjexp}
 
 \newcommand{\expcard}[1]{%
   \def\exHeading{}\def\exOrg{}\def\exRole{}\def\exPeriod{}\def\exSuper{}%
-  \gdef\exDesc{}\def\exArch{}\def\exShotA{}\def\exShotB{}\def\exPhoto{}%
+  \gdef\exDesc{}%
+  \def\exArch{}\def\exArchLabel{相關畫面／文件}%
+  \def\exShotA{}\def\exShotB{}\def\exShotLabel{工作／活動畫面}%
+  \def\exPhoto{}\def\exPhotoLabel{團隊照片／成果照片}%
   \pgfkeys{/exp,#1}%
   \ifnum\value{pjexp}>0 \clearpage\fi\stepcounter{pjexp}\setwidths
   \ifx\exArch\empty\def\exArchRows{}\else
-    \def\exArchRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 相關畫面／文件}\\\hline
+    \def\exArchRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries \exArchLabel}\\\hline
       \multicolumn{4}{|c|}{\safeimg{width=0.68\cwALL,height=4.3cm}{\exArch}}\\\hline}\fi
-  \ifx\exShotA\empty\ifx\exPhoto\empty\def\exShotRows{}\else\def\exShotRows{X}\fi\else\def\exShotRows{X}\fi
-  \ifx\exShotRows\empty\else
-    \def\exShotRows{\lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries 工作／活動畫面}&%
-      \lab{2}{\cwCD}{\cellcolor{hdrfill}\color{navy}\bfseries 團隊照片／成果照片}\\\hline
-      \multicolumn{2}{|c|}{\ifx\exShotA\empty\else\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotA}\fi
-        \ifx\exShotB\empty\else\hspace{4pt}\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotB}\fi}&%
-      \multicolumn{2}{c|}{\ifx\exPhoto\empty\else\safeimg{height=3.6cm,width=0.92\cwCD}{\exPhoto}\fi}\\\hline}\fi
+  \def\exShotRows{}%
+  \ifx\exShotA\empty
+    \ifx\exPhoto\empty\else
+      \def\exShotRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries \exPhotoLabel}\\\hline
+        \multicolumn{4}{|c|}{\safeimg{height=3.6cm,width=0.9\cwALL}{\exPhoto}}\\\hline}%
+    \fi
+  \else
+    \ifx\exPhoto\empty
+      \def\exShotRows{\lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries \exShotLabel}\\\hline
+        \multicolumn{4}{|c|}{\safeimg{height=3.6cm,width=0.46\cwALL}{\exShotA}%
+          \ifx\exShotB\empty\else\hspace{6pt}\safeimg{height=3.6cm,width=0.46\cwALL}{\exShotB}\fi}\\\hline}%
+    \else
+      \def\exShotRows{\lab{2}{\cwAB}{\cellcolor{hdrfill}\color{navy}\bfseries \exShotLabel}&%
+        \lab{2}{\cwCD}{\cellcolor{hdrfill}\color{navy}\bfseries \exPhotoLabel}\\\hline
+        \multicolumn{2}{|c|}{\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotA}%
+          \ifx\exShotB\empty\else\hspace{4pt}\safeimg{height=3.6cm,width=0.46\cwAB}{\exShotB}\fi}&%
+        \multicolumn{2}{c|}{\safeimg{height=3.6cm,width=0.92\cwCD}{\exPhoto}}\\\hline}%
+    \fi
+  \fi
   \ifx\exSuper\empty\def\exSuperRow{}\else
-    \def\exSuperRow{\lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 指導／主管}&\multicolumn{3}{p{\cwBCD}|}{\centering\exSuper}\\\hline}\fi
+    \def\exSuperRow{\vhd{1}{\cwA}{指導／主管}&\vcell{3}{\cwBCD}{\exSuper}\\\hline}\fi
   \par\vspace{0.5em}\noindent{\large\bfseries\color{navy} \thepjexp.\ \exHeading}\par\vspace{0.3em}
   \noindent\begin{tabular}{|p{\cwA}|p{\cwB}|p{\cwC}|p{\cwD}|}\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 服務單位}&\multicolumn{3}{p{\cwBCD}|}{\centering\exOrg}\\\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 職稱／角色}&\multicolumn{3}{p{\cwBCD}|}{\centering\exRole}\\\hline
-    \lab{1}{\cwA}{\cellcolor{hdrfill}\color{navy}\bfseries 服務期間}&\multicolumn{3}{p{\cwBCD}|}{\centering\exPeriod}\\\hline
+    \vhd{1}{\cwA}{服務單位}&\vcell{3}{\cwBCD}{\exOrg}\\\hline
+    \vhd{1}{\cwA}{職稱／角色}&\vcell{3}{\cwBCD}{\exRole}\\\hline
+    \vhd{1}{\cwA}{服務期間}&\vcell{3}{\cwBCD}{\exPeriod}\\\hline
     \exSuperRow
     \lab{4}{\cwALL}{\cellcolor{hdrfill}\color{navy}\bfseries 內容}\\\hline
     \multicolumn{4}{|p{\cwALL}|}{\setlength{\parindent}{2em}\exDesc}\\\hline
     \exArchRows
     \exShotRows
   \end{tabular}\par}
+
+% ---------- 附錄獎狀：一頁一張，置中加說明 ----------
+\newcommand{\certpage}[2]{%
+  \ifnum\value{pjcert}>0 \clearpage\fi\stepcounter{pjcert}%
+  \begin{center}
+    \safeimg{height=19cm,width=0.88\linewidth}{#1}\par\vspace{6pt}
+    {\fontsize{10}{13}\selectfont #2}
+  \end{center}}
 
 % ---------- 節標題（navy 粗體 + navy 底線，取代預設 \section*） ----------
 \newcommand{\gridsec}[1]{%
@@ -150,7 +243,7 @@
 \end{center}
 \vspace{2pt}\noindent\textcolor{navy}{\rule{\linewidth}{0.9pt}}
 
-\gridsec{一、競賽與專題}
+\gridsec{壹、競賽成果}
 
 % ---------------------------------------------------------------- 1
 \proj{
@@ -161,68 +254,38 @@
   contest={2025 客語 AI 應用黑客松創意發想大賽},
   host={客家委員會},
   award={冠軍},
-  desc={利用 Flutter 開發的跨平台 AI 學習 App，結合影像辨識與語言學習：使用者拍下身邊的物品，系統即時辨識並翻譯為客語。前端為 Flutter，後端以 Python Flask 提供 API，整合 Moondream 2 Vision-Language Model、Gemini 2.5 Flash 與客家委員會提供的客語語音與翻譯 API，支援四縣腔與海陸腔。功能包含客語辭典、拍照學單字、情境對話與單字記事本。本作品在 40 隊報名、10 隊進入決賽的競賽中獲得冠軍。
-  \par 我主要負責系統架構設計、拍照學單字與情境對話功能，並擔任團隊主講人。},
-  arch={figures/katch_arch.png},
-  shotA={figures/katch_ui1.png}, shotB={figures/katch_ui2.png},
-  photo={figures/katch_award.jpg}}
-
-% ---------------------------------------------------------------- 2
-\proj{
-  heading={基於多模態圖譜推論的可溯源會議知識檢索系統（GRASP）——佳作},
-  name={基於多模態圖譜推論的可溯源會議知識檢索系統},
-  advisor={國立中央大學資訊工程學系 周立德 教授},
-  students={韓欣澄、張峪銓},
-  contest={中央資工大學部專題實驗競賽},
-  host={國立中央大學資訊工程學系},
-  award={佳作},
-  desc={國際標準組織（如 W3C、IETF）累積了大量會議影片，沒有字幕時幾乎無法檢索。GRASP 以 OpenCV 做畫面遮罩與改良式 SSIM 擷取投影片，用 Phi-3.5-Vision 解析投影片內容、Whisper 產生帶時間戳記的逐字稿，再由 LLM 抽取 entity 與 relation，建立 Neo4j knowledge graph，並以 Louvain community detection 產生社群摘要，結合 LanceDB 向量檢索完成 GraphRAG 問答。每則回答都能追溯到影片秒數或投影片頁面。前端為 Chrome Extension（Manifest V3、Side Panel），後端部署於雲端，並以 Ragas 評估檢索與回答品質。本專題獲國科會大專生研究計畫支持。
-  \par 我負責 RAG 以外的系統部分，包含影片前處理、投影片解析、語音轉錄、多模態對齊與 Chrome Extension。\todo{確認最終分工}},
-  arch={figures/grasp_arch.png},
-  shotA={figures/grasp_ui1.png}, shotB={figures/grasp_ui2.png},
-  photo={figures/grasp_photo.jpg}}
-
-% ---------------------------------------------------------------- 3
-\proj{
-  heading={AI CUP ESG 承諾驗證競賽（VeriPromiseESG）——前標},
-  name={Hierarchy-Constrained Decision Calibration and Decoding for Multi-Task ESG Promise Verification},
-  advisor={國立中央大學資訊工程學系 周立德 教授、蔡宗翰 教授},
-  students={韓欣澄、陳俊瑋、陳聖勳},
-  contest={AI CUP 教育部全國大專校院人工智慧競賽——永續承諾驗證（VeriPromiseESG）},
-  host={教育部／台灣人工智慧學校},
-  award={前標},
-  desc={任務是對 ESG 報告書段落同時預測四個有階層限制的輸出欄位（PS、VT、ES、EQ），合法組合共 17 種。我們以 shared-encoder four-head RoBERTa 作為固定的 base model，只改變 calibration 與 output rule，比較 independent argmax、deterministic projection、class-bias calibration 與 17-state valid-state decoding。資料為 2,000 個段落、來自 49 份報告；採 rotating three-way cross-fitting，並同時評估 document-disjoint 與 same-document 兩種切分，以四欄加權 macro-F1 為主要指標。研究成果整理為 NTCIR-19 國際研討會論文提案（投稿中）。
-  \par 我負責報告與論文撰寫以外的所有部分，包含方法設計、模型訓練與實驗分析。},
-  arch={figures/esg_pipeline.png},
-  shotA={figures/esg_result.png}}
+  desc={利用 Flutter 開發的跨平台 AI 學習 App，結合影像辨識與語言學習：使用者拍下身邊的物品，系統即時辨識並翻譯為客語。前端為 Flutter，後端以 Python Flask 提供 API，整合 Moondream 2 Vision-Language Model、Gemini 2.5 Flash 與客家委員會提供的客語語音與翻譯 API，支援四縣腔與海陸腔。功能包含客語辭典、拍照學單字、情境對話與單字記事本。本作品在 40 隊報名、10 隊進入決賽的競賽中獲得冠軍。},
+  arch={figures/katch_arch.png}, archlabel={系統架構}, archh=4.8cm,
+  shotA={figures/katch_ui1.png}, shotB={figures/katch_ui2.png}, shotC={figures/katch_ui3.png},
+  shotlabel={系統畫面：單字詳情、圖片情境對話與客語對話}, shoth=4.2cm,
+  photo={figures/katch_award.jpg}, photolabel={頒獎典禮（冠軍）}, photoh=4.2cm}
 
 % ---------------------------------------------------------------- 4
 \proj{
-  heading={2025 土地銀行校園金融創意競賽——全國冠軍},
+  heading={2025 土地銀行校園金融創意挑戰賽——金獎},
   name={綠易通（Green E Pass）—— 中小企業 ESG 評分與綠色融資輔助平台},
-  advisor={\todo{指導教授}},
-  students={\todo{隊員姓名}},
-  contest={土地銀行校園金融創意競賽},
-  host={\todo{舉辦單位（土地銀行？或與其他單位共同主辦）}},
-  award={全國冠軍},
-  desc={協助中小企業評估 ESG 表現，並對應到綠色融資的貸款利率級距。核心是透明的 rule-based 100 分評分架構；LLM（Groq LLaMA 3.3 70B 與 Gemini）只負責把改善建議寫成易讀的說明，不參與評分，讓結果可以被稽核。後端使用 Node.js 與 Express，提供 14 個 REST API，並可輸出內嵌中文字型的 PDF 報告。
-  \par 我負責\todo{個人分工}。},
-  arch={figures/greenepass_arch.png},
-  shotA={figures/greenepass_ui1.png},
-  photo={figures/greenepass_award.jpg}}
+  students={陳品謙、劉庭妤、韓欣澄},
+  contest={2025 土地銀行校園金融創意挑戰賽},
+  host={臺灣土地銀行股份有限公司、財團法人台灣金融研訓院},
+  award={金獎（全國第一）},
+  desc={協助中小企業評估 ESG 表現，並對應到綠色融資的貸款利率級距。核心是透明的 rule-based 100 分評分架構；LLM（Groq LLaMA 3.3 70B 與 Gemini）只負責把改善建議寫成易讀的說明，不參與評分，讓結果可以被稽核。後端使用 Node.js 與 Express，提供 14 個 REST API，並可輸出內嵌中文字型的 PDF 報告。本作品自初賽報名超過 200 隊中脫穎而出，經初賽書審、複賽工作坊與決賽簡報後獲得金獎，為本屆競賽第一名。},
+  arch={figures/greenepass_arch.png}, archlabel={ESG 評級與貸款利率級距對應}, archh=3.2cm,
+  wide={figures/greenepass_ui2.png}, widelabel={評估結果與視覺化趨勢追蹤}, wideh=2.2cm,
+  shotA={figures/greenepass_ui1.png}, shotlabel={OCR 智慧碳排查：上傳單據自動填入}, shoth=2.6cm}
 
 % ---------------------------------------------------------------- 5
 \proj{
   heading={2025 中央資工校內網路應用創意競賽——金牌獎},
-  name={\todo{作品名稱}},
+  name={司馬古洛夫（SMARTGLOVE）—— 導航與感應智慧手套},
   advisor={國立中央大學資訊工程學系 周立德 教授（計算機網路課程）},
-  students={\todo{四位隊員姓名}},
-  contest={網路應用創意競賽},
+  students={陳品謙（組長）、陳聖勳、林昱呈、韓欣澄},
+  contest={校內網路應用創意競賽},
   host={國立中央大學資訊工程學系},
   award={金牌獎},
-  desc={\todo{作品簡介與個人負責部分}},
-  arch={figures/netapp_arch.png},
-  shotA={figures/netapp_ui1.png}}
+  desc={現有導航多仰賴手機螢幕與語音提示，使用者行走或騎車時容易因低頭查看或配戴耳機而分心；需要刷卡進出門禁或搭電梯時，掏卡也常因雙手忙碌、下雨或戴手套而不便。SMARTGLOVE 將導航提示與感應功能整合進手套：手機端以 Flutter 開發，透過 Google Maps API 規劃路線並判斷轉彎方向，再經藍牙 BLE 將指令送到手套內的 ESP32 微控制器，以 LED 燈條即時顯示轉向提示。手套內並整合 MFRC522 RFID 模組，可作為門禁卡與電梯感應卡使用；另以手機加速度計與陀螺儀偵測角速度劇烈變化，判定跌倒時自動發送緊急求救訊息。期中原規劃以震動馬達提示轉向，實作後改為 LED 燈條呈現，並新增跌倒偵測功能。},
+  arch={figures/netapp_arch.png}, archlabel={系統流程圖（App 導航 → BLE → ESP32 → LED）}, archh=4.0cm, shoth=2.8cm,
+  shotA={figures/netapp_ui1.png}, shotB={figures/netapp_ui2.png}, shotlabel={實機 Demo：導航與緊急求救},
+  photo={figures/netapp_photo.jpg}, photolabel={實機 Demo：RFID 門禁感應}}
 
 % ---------------------------------------------------------------- 6
 \proj{
@@ -233,83 +296,133 @@
   contest={AI CUP 基於時序資料之桌球戰術與結果預測競賽},
   host={教育部／台灣人工智慧學校},
   award={佳作},
-  desc={預測桌球比賽中的戰術。以 LightGBM 搭配 Markov ensemble 建模，並使用 GroupKFold 驗證。過程中發現 public leaderboard 的分數因 data leakage（serverGetPoint 與舊測試資料重疊）而被灌水，因此改以 private-safe baseline 評估模型，避免被虛高的排行榜分數誤導。
-  \par 我負責報告撰寫以外的所有部分，包含特徵工程、模型訓練與 leakage 排查。},
-  arch={figures/tt_pipeline.png},
-  shotA={figures/tt_result.png}}
+  desc={預測桌球比賽中的戰術。以 LightGBM 搭配 Markov ensemble 建模，並使用 GroupKFold 驗證。過程中發現 public leaderboard 的分數因 data leakage（serverGetPoint 與舊測試資料重疊）而被灌水，因此改以 private-safe baseline 評估模型，避免被虛高的排行榜分數誤導。},
+  arch={figures/tt_pipeline.png}, archlabel={模型流程與驗證設計}, archh=5.0cm}
 
 % ---------------------------------------------------------------- 7
 \proj{
   heading={HLB 智慧驅鳥系統——新工程教育計畫課程專題},
   name={HLB 智慧驅鳥系統（IoT + AI 風力發電機驅鳥）},
-  advisor={\todo{課程／指導教師}},
-  students={\todo{隊員姓名}},
-  contest={中央大學工學院苗圃工坊（114-1）},
+  advisor={國立中央大學 林子軒 教授},
+  students={劉庭妤、郭沛婕、陳柏軒、韓欣澄},
+  contestlabel={計畫／工坊}, contest={中央大學工學院苗圃工坊（114-1）},
   host={國立中央大學工學院},
   award={代表學校參展},
-  desc={以 IoT 與 AI 為風力發電機設計的驅鳥系統，降低鳥類撞擊風機的風險。\todo{補充系統做法：偵測方式、硬體與模型}
-  \par 我負責全部的軟體開發，並代表學校參展。},
-  arch={figures/hlb_arch.png},
-  shotA={figures/hlb_ui1.png},
-  photo={figures/hlb_expo.jpg}}
+  awardlabel={成果},
+  desc={起源於竹圍漁港的觀察：候鳥遷徙路線與離岸風機設置區域高度重疊，鳥類撞擊不僅危及自身，也會損傷風機葉片，影響發電效率與維運成本。系統採三層架構：感知層以 AI 視覺模組（HUB-8735\_ultra）偵測鳥類，並以 HC-SR04 超音波模組即時量測鳥類與風機的距離；核心控制器為 Raspberry Pi Pico 2W，依偵測結果驅動致動層的 WS2812B 智能燈條、蜂鳴器與風機馬達，並提供網頁伺服器供工作人員遠端監控。距離大於 65 公分為安全（綠燈）；65 公分以內進入警戒（黃燈並觸發蜂鳴器主動驅離）；小於 45 公分為危險，系統會自動強制風機停機，若強制停機未成功，工作人員可透過網頁介面手動緊急停機，並同步發送 LINE 警報通知。實測顯示 HC-SR04 在 0–50 公分範圍內平均誤差低於 5\%，系統自偵測到紅燈警示的總反應時間約 150 毫秒。本專題為教育部「新工程教育方法實驗與建構計畫」（C 類學院主題式課群建構計畫）之課程成果。在 115 年期中海報審查暨成果交流活動中，我以該計畫授予的「助教」身分代表團隊介紹本作品。},
+  arch={figures/hlb_arch.png}, archlabel={系統架構}, archh=2.7cm, wideh=2.7cm, shoth=2.3cm,
+  wide={figures/hlb_ui1.png}, widelabel={遠端監控網頁與 LINE 警報通知},
+  shotA={figures/hlb_ui2.png}, shotlabel={AI 視覺辨識鳥類},
+  photo={figures/hlb_expo.jpg}, photolabel={超音波測距硬體}}
 
 % ---------------------------------------------------------------- 8
 \proj{
-  heading={2025 年生成式人工智慧創新應用國際競賽——Format-Fluid},
+  heading={2025 年生成式人工智慧創新應用國際競賽——佳作},
   name={Format-Fluid: Solving the Knowledge-Modality Gap（知識模態轉譯引擎）},
-  advisor={\todo{指導教授（若有）}},
+  advisor={國立中央大學資訊工程學系 周立德 教授},
   students={韓欣澄（國立中央大學資訊工程學系）、劉庭妤（國立中央大學土木工程學系）、韓松諺（國立臺北大學經濟學系）},
   contest={2025 International Generative Artificial Intelligence Innovation Application Competition（2025 年生成式人工智慧創新應用國際競賽）},
-  host={\todo{舉辦單位}},
+  host={長榮大學管理學院（主辦）；日本新潟青陵大學、越南阮必成大學、印尼愛蘭加大學（協辦）；中華民國教育部（指導）},
   award={佳作},
-  desc={針對「知識模態落差」（Knowledge-Modality Gap）問題——知識多以固定的文字格式呈現，卻不符合每個學習者不同的認知習慣——設計 Format-Fluid 智慧自適應學習引擎，以多階段序列式 AI Chain 將複雜文本轉譯為不同認知模態。Stage 1 以 GPT-4 Turbo 擔任「知識萃取者」，將原文解構為結構化 JSON（實體、因果關係、關鍵論點），去除原文的語氣與修辭；Stage 2 依使用者選擇的模式分別以不同 AI agent 生成創意藍圖：Podcast 模式生成師生對話腳本（Alice 提問、Bob 講解），Comic 模式生成四格漫畫分鏡與圖像提示，Summary 模式生成階層式重點摘要與生活化類比；Stage 3 以 OpenAI TTS API（雙音色）與 DALL-E 3 API 將藍圖轉為最終的語音與圖像成果，前端即時呈現。
-  \par 我負責\todo{個人分工，例如：系統架構設計、AI Chain 串接、後端開發等}。}}
+  desc={針對「知識模態落差」（Knowledge-Modality Gap）問題——知識多以固定的文字格式呈現，卻不符合每個學習者不同的認知習慣——設計 Format-Fluid 智慧自適應學習引擎，以多階段序列式 AI Chain 將複雜文本轉譯為不同認知模態。Stage 1 以 GPT-4 Turbo 擔任「知識萃取者」，將原文解構為結構化 JSON（實體、因果關係、關鍵論點），去除原文的語氣與修辭；Stage 2 依使用者選擇的模式分別以不同 AI agent 生成創意藍圖：Podcast 模式生成師生對話腳本（Alice 提問、Bob 講解），Comic 模式生成四格漫畫分鏡與圖像提示，Summary 模式生成階層式重點摘要與生活化類比；Stage 3 以 OpenAI TTS API（雙音色）與 DALL-E 3 API 將藍圖轉為最終的語音與圖像成果，前端即時呈現。},
+  arch={figures/ff_podcast.jpg}, archlabel={系統畫面：Podcast 模式}, archh=4.4cm, shoth=3.2cm,
+  shotA={figures/ff_comic.jpg}, shotB={figures/ff_summary.jpg}, shotlabel={系統畫面：Comic 模式與 Summary 模式}}
 
 % =====================================================================
 \clearpage
-\gridsec{二、實習與服務經歷}
+\setcounter{pj}{0}
+\gridsec{貳、研究專題與論文}
+
+% ---------------------------------------------------------------- 2
+\proj{
+  heading={研究專題・國科會大專生研究計畫},
+  name={基於多模態圖譜推論的可溯源會議知識檢索系統},
+  advisor={國立中央大學資訊工程學系 周立德 教授},
+  students={韓欣澄、張峪銓},
+  contestlabel={計畫名稱}, contest={國科會大專生研究計畫},
+  hostlabel={補助單位}, host={國家科學及技術委員會},
+  awardlabel={競賽成果}, award={\blist{\bi 資電學院專題競賽佳作\\ \bi InnoServe 參賽中\\ \bi 智策AI 參賽中}},
+  desc={國際標準組織（如 W3C、IETF）累積了大量會議影片，沒有字幕時幾乎無法檢索。GRASP 以 OpenCV 做畫面遮罩與改良式 SSIM 擷取投影片，用 Phi-3.5-Vision 解析投影片內容、Whisper 產生帶時間戳記的逐字稿，再由 LLM 抽取 entity 與 relation，建立 Neo4j knowledge graph，並以 Louvain community detection 產生社群摘要，結合 LanceDB 向量檢索完成 GraphRAG 問答。每則回答都能追溯到影片秒數或投影片頁面。前端為 Chrome Extension（Manifest V3、Side Panel），後端部署於雲端，並以 Ragas 評估檢索與回答品質。系統已全部實作完成，目前同時報名 2026 InnoServe 資訊應用服務創新競賽與智策AI（資策會 AI 創新實戰大賽），兩項競賽均於參賽中。},
+  arch={figures/grasp_arch.png}, archlabel={系統模組架構}, archh=1.8cm, wideh=1.8cm,
+  wide={figures/grasp_graphrag.png}, widelabel={可溯源即時問答模組（GraphRAG 檢索與生成流程）},
+  shotA={figures/grasp_ui1.png}, shotlabel={Chrome 擴充功能：即時問答、知識圖譜探索與逐字稿},
+  photo={figures/grasp_ui2.png}, photolabel={完整使用頁面（線上會議同步側欄）}, shoth=2.0cm}
+
+% ---------------------------------------------------------------- 3
+\proj{
+  heading={ESG 承諾驗證階層校準與解碼研究——NTCIR-19 論文投稿中},
+  name={Hierarchical Projection as a Validity Layer for Multilingual ESG Promise Verification},
+  advisor={國立中央大學資訊工程學系 周立德 教授、蔡宗翰 教授},
+  students={韓欣澄、陳俊瑋、陳聖勳、黃士育},
+  contestlabel={投稿會議}, contest={NTCIR-19 國際研討會 AI CUP Special Session},
+  hostlabel={主辦單位}, host={日本國立情報學研究所（National Institute of Informatics, NII）},
+  awardlabel={論文狀態}, award={審稿中},
+  desc={任務是對 ESG 報告書段落同時預測四個有階層限制的輸出欄位（PS、VT、ES、EQ），合法組合共 17 種。我們以 shared-encoder four-head RoBERTa 作為固定的 base model，只改變 calibration 與 output rule，比較 independent argmax、deterministic projection、class-bias calibration 與 17-state valid-state decoding。資料為 2,000 個段落、來自 49 份報告；採 rotating three-way cross-fitting，並同時評估 document-disjoint 與 same-document 兩種切分，以四欄加權 macro-F1 為主要指標。研究發現 hierarchical projection 作為免重訓的 validity layer，可將中文資料的不合法組合比例由 12.55\% 降至零，whole-tuple accuracy 提升 0.035；並在英、法、日、韓四語系共 32 組實驗中，whole-tuple accuracy 全數提升。本研究是我們在 AI CUP 永續承諾驗證競賽獲得前標的方法之延伸，目前已整理為論文，投稿至 NTCIR-19 國際研討會 AI CUP Special Session，審稿中。},
+  arch={figures/esg_hierarchy.png}, archlabel={任務階層：120 種組合中僅 17 種合法}, archh=4.2cm,
+  wide={figures/esg_rules.png}, widelabel={七種決策規則（output rule × calibration）}, wideh=4.2cm}
+
+
+% =====================================================================
+\clearpage
+\setcounter{pjexp}{0}
+\gridsec{參、實習與實務專案}
 
 \expcard{
   heading={Garmin（台灣）Web Application Services 團隊——Software Engineer Intern},
   org={Garmin（台灣）Web Application Services 團隊},
   role={Software Engineer Intern},
   period={2026/07 起（在職）},
-  desc={參與亞太地區多套對外網站系統的開發與維運，工作橫跨 data engineering、backend development 與 DevOps tooling，並完整經歷程式開發、Code Review、測試到部署的流程。}}
-
-\expcard{
-  heading={國立中央大學資訊工程學系學會——學術部共同創辦人暨副部長},
-  org={國立中央大學資訊工程學系學會},
-  role={學術部共同創辦人暨副部長},
-  period={\todo{任期}},
-  desc={大一起加入公關部，後續與同學共同建立學術部並擔任副部長。主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，累計超過 200 人次參與。}}
-
-\expcard{
-  heading={AWS Educate 雲端校園大使——第九屆},
-  org={AWS Educate},
-  role={雲端校園大使（第九屆）},
-  period={\todo{期間（第九屆的起訖日期）}},
-  desc={於校內推廣 AWS 雲端技術學習資源。\todo{補充具體推廣活動與成果}}}
+  desc={參與亞太地區多套對外服務系統的開發與維運，工作橫跨 legacy 系統現代化、新功能開發、效能疑難排解與跨系統整合。在一套校園獎學金申請系統（新舊框架並存）上，從需求訪談、既有程式碼考古開始，獨立完成後台可編輯審核欄位、資格篩選邏輯、排程提醒信與跨系統批次整合等多個功能模組，並配合法遵需求調整申請表單欄位，完整走過程式碼審查、測試與上線前檢查流程。另外，針對一套 B2B 經銷商後台的批次資料上傳效能問題，運用 GitHub Copilot 輔助分析既有程式碼找出瓶頸並驗證改善成效；也參與公司級 Java 版本汰換計畫，將舊服務升級至最新 LTS 版本；並以 Vue 重構一套客服申請流程的前端頁面，修正過一個客服整合服務的商業邏輯問題，以及將一項內部 API 呼叫遷移至新版服務端點並協調跨環境的網路權限開通。完整經歷企業級版本控制、Code Review、測試報告撰寫到正式環境部署的流程。}}
 
 \expcard{
   heading={國立中央大學 蔡宗翰教授實驗室——教育部 AI CUP 全國競賽平台開發與維運},
   org={國立中央大學 蔡宗翰教授實驗室},
   role={實習生},
-  period={\todo{期間}},
+  period={114 學年度（大三）起，迄今},
   super={蔡宗翰 教授},
   desc={負責\textbf{教育部 AI CUP 全國競賽平台}的開發與維運。平台以 Django、Flask、PostgreSQL 與 Docker 建置，支援數千名參賽者的報名服務，並與趨勢科技、玉山金控等企業協作。針對伺服器故障風險，自行建立自動監控腳本與 LINE Bot 故障通知，並利用實驗室閒置機器架設備援主機，搭配自動 DNS failover；維運期間平台系統異常率相較往年降低 70\% 以上。}}
 
 \expcard{
-  heading={教育部「新工程教育方法實驗與建構計畫」助教},
-  org={國立中央大學（教育部新工程教育方法實驗與建構計畫）},
-  role={課群建構計畫助教},
+  heading={帛瑀室內設計（Silky Jade Interior Design）——形象官網接案},
+  org={帛瑀室內設計},
+  role={獨立接案開發者},
   period={\todo{期間}},
-  desc={擔任中央大學參與之 C 類學院主題式課群建構計畫助教，並出席 115 年期中海報審查暨成果交流活動。}}
+  desc={為室內設計工作室獨立開發五頁式形象官網（首頁、關於、作品、服務、聯絡），負責需求溝通、版面設計到上線部署的完整流程。以 HTML、CSS、JavaScript 手刻前端，串接 EmailJS 處理聯絡表單寄送，並部署於 Vercel。網站已正式對外營運。\todo{補充：是否有 RWD／SEO／作品管理等值得一提的細節}},
+  arch={figures/silkyjade_home.png}, archlabel={網站首頁},
+  shotA={figures/silkyjade_1.png}, shotB={figures/silkyjade_2.png}, shotlabel={作品與聯絡頁面}}
 
+% =====================================================================
 \clearpage
-\exper{中央大學環境工程研究所 網路與伺服器系統管理（工讀）}{\todo{期間}}
+\setcounter{pjexp}{0}
+\gridsec{肆、領導、教學與服務}
+
+\expcard{
+  heading={國立中央大學資訊工程學系學會——學術部共同創辦人暨副部長},
+  org={國立中央大學資訊工程學系學會},
+  role={學術部共同創辦人暨副部長},
+  period={114 學年度（大三）起，迄今},
+  desc={大一起加入公關部，後續與同學共同建立學術部並擔任副部長。主導規劃 AWS Taipei、Trend Micro 等企業參訪，以及升學與留學經驗分享活動，累計超過 200 人次參與。}}
+
+\expcard{
+  heading={AWS Educate 雲端校園大使},
+  org={AWS Educate},
+  role={第九屆雲端校園大使},
+  period={2026 年 10 月起（甫獲選上任）},
+  desc={獲選為第九屆 AWS Educate 雲端校園大使，於校內推廣 AWS 雲端技術學習資源，服務期間尚在進行中。}}
+
+\exper{中央大學環境工程研究所 網路與伺服器系統管理（工讀）}{大三（114 學年度）}
 {負責研究所的網路與伺服器系統管理。}
 
 \exper{資訊與社會服務 II 課程專題 組長}{2025 春季學期}
 {帶領 7 人團隊製作 5 支資安知識影片，上架至中央大學資工系官方 YouTube 頻道。}
+
+% =====================================================================
+\clearpage
+\setcounter{pjcert}{0}
+\gridsec{伍、附錄：獲獎證明}
+
+\certpage{figures/cert_katch.jpg}{2025 客語 AI 應用黑客松創意發想大賽——冠軍（客家委員會）}
+\certpage{figures/cert_greenepass.jpg}{2025 土地銀行校園金融創意挑戰賽——金獎（臺灣土地銀行、台灣金融研訓院）}
+\certpage{figures/cert_ncu_project.jpg}{\todo{其他獎狀，如校內網路應用創意競賽、生成式 AI 國際競賽等}}
 
 \end{document}
